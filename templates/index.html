@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buyer Lookup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fffbcc; /* Light yellow */
+            color: #003366; /* Dark blue */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #003366; /* Dark blue */
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #003366; /* Dark blue */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #002244; /* Darker blue */
+        }
+        a {
+            color: #003366; /* Dark blue */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .welcome {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Enter Buyer ID</h1>
+        {% if session.get('username') %}
+            <p class="welcome">Welcome, {{ session['username'] }}! <a href="/logout">Logout</a></p>
+            <form action="/buyer" method="post">
+                <label for="buyerId">Buyer ID:</label>
+                <input type="text" id="buyerId" name="buyerId" required>
+                <button type="submit">Search</button>
+            </form>
+        {% else %}
+            <p><a href="/login">Login</a> or <a href="/register">Register</a> to continue.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
