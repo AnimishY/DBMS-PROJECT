@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ store_name }}!</h1>
+    <div class="dashboard-options">
+        <a href="#" class="btn">Manage Products</a>
+        <a href="#" class="btn">View Orders</a>
+        <a href="#" class="btn">Store Settings</a>
+        <a href="{{ url_for('seller.logout') }}" class="btn">Logout</a>
+    </div>
+</div>
+{% endblock %}

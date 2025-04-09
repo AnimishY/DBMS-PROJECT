@@ -1,0 +1,1 @@
+# Placeholder for buyer-related database models and queries.

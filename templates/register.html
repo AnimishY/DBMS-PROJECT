@@ -1,81 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fffbcc; /* Light yellow */
-            color: #003366; /* Dark blue */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        h1 {
-            color: #003366; /* Dark blue */
-        }
-        form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #003366; /* Dark blue */
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #002244; /* Darker blue */
-        }
-        a {
-            color: #003366; /* Dark blue */
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        div {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Registration</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
     <div>
-        <h1>Register</h1>
-        <form action="/register" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+        <h1>Register as a Buyer</h1>
+        <form action="/register" method="POST">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required><br>
+
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required><br>
+
+            <label for="address_line1">Address Line 1:</label>
+            <input type="text" id="address_line1" name="address_line1" required><br>
+
+            <label for="address_line2">Address Line 2:</label>
+            <input type="text" id="address_line2" name="address_line2"><br>
+
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" required><br>
+
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" required><br>
+
+            <label for="pincode">Pin Code:</label>
+            <input type="text" id="pincode" name="pincode" required><br>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br>
+
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required><br>
+
             <button type="submit">Register</button>
         </form>
-        <a href="/login">Already have an account? Login here.</a>
+        <a href="/buyer/login">Already have an account? Login here.</a>
     </div>
 </body>
 </html>

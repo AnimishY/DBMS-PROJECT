@@ -1,0 +1,1 @@
+# Placeholder for product-related database models and queries.
