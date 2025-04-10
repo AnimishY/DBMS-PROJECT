@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Product History</h1>
+    {% if products %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.ProductId }}</td>
+                <td>{{ product.Name }}</td>
+                <td>{{ product.Description }}</td>
+                <td>${{ product.Price }}</td>
+                <td>{{ product.Stock }}</td>
+                <td>{{ product.CreatedAt }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No product history available.</p>
+    {% endif %}
+    <a href="{{ url_for('seller.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

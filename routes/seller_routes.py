@@ -336,3 +336,32 @@ def view_orders():
             conn.close()
     
     return render_template('view_orders.html', products=products)
+
+@seller_blueprint.route('/product-history', methods=['GET'])
+@seller_login_required
+def product_history():
+    conn = None
+    cursor = None
+    try:
+        conn = connect_to_mysql()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Fetch product history for the logged-in seller
+        query = """
+        SELECT ProductId, Name, Description, Price, Stock, CreatedAt
+        FROM Product
+        WHERE SellerId = %s
+        ORDER BY CreatedAt DESC
+        """
+        cursor.execute(query, (session['seller_id'],))
+        products = cursor.fetchall()
+    except Exception as e:
+        flash(f"Error fetching product history: {str(e)}", 'danger')
+        products = []
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    
+    return render_template('seller_product_history.html', products=products)
