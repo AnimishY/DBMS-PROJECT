@@ -313,29 +313,29 @@ def delete_product(product_id):
 @seller_login_required
 def view_orders():
     conn = None
-    cursor = None
     try:
         conn = connect_to_mysql()
         cursor = conn.cursor(dictionary=True)
-        
-        # Fetch products for the logged-in seller, including image_path
-        query = """
-        SELECT ProductId, Name, Description, Price, Stock, CategoryId, image_path
-        FROM Product
-        WHERE SellerId = %s
-        """
+
+        # Fetch order history for the logged-in seller
+        query = '''
+        SELECT o.OrderId, o.OrderDate, o.TotalAmount, o.OrderStatus, p.Name AS ProductName, oi.Quantity
+        FROM Orders o
+        JOIN OrderItem oi ON o.OrderId = oi.OrderId
+        JOIN Product p ON oi.ProductId = p.ProductId
+        WHERE p.SellerId = %s
+        ORDER BY o.OrderDate DESC
+        '''
         cursor.execute(query, (session['seller_id'],))
-        products = cursor.fetchall()
+        orders = cursor.fetchall()
+
+        return render_template('view_orders.html', orders=orders)
     except Exception as e:
-        flash(f"Error fetching products: {str(e)}", 'danger')
-        products = []
+        flash(f"Failed to load orders: {str(e)}", 'danger')
+        return redirect(url_for('seller.dashboard'))
     finally:
-        if cursor:
-            cursor.close()
         if conn:
             conn.close()
-    
-    return render_template('view_orders.html', products=products)
 
 @seller_blueprint.route('/product-history', methods=['GET'])
 @seller_login_required
