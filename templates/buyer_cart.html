@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Your Cart</h1>
+    {% if cart_items %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.Name }}</td>
+                <td>{{ item.Description }}</td>
+                <td>${{ item.Price }}</td>
+                <td>{{ item.Quantity }}</td>
+                <td>${{ item.Price * item.Quantity }}</td>
+                <td>
+                    <form action="{{ url_for('buyer.remove_from_cart', product_id=item.ProductId) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <form action="{{ url_for('buyer.place_order') }}" method="POST">
+        <button type="submit" class="btn btn-success">Order Now</button>
+    </form>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}
+    <a href="{{ url_for('buyer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

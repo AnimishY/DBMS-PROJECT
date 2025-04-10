@@ -106,10 +106,250 @@ def login():
 @buyer_blueprint.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'))
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.login'))
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product')
+        products = cursor.fetchall()
+        return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'), products=products)
+    except Exception as e:
+        flash(f'Failed to load dashboard: {str(e)}')
+        return redirect(url_for('buyer.login'))
+    finally:
+        if conn:
+            conn.close()
 
 @buyer_blueprint.route('/logout')
 def logout():
     session.clear()
     flash('Logged out successfully')
     return redirect(url_for('home'))
+
+@buyer_blueprint.route('/products')
+@login_required
+def products():
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.dashboard'))
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product')
+        products = cursor.fetchall()
+        return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'), products=products)
+    except Exception as e:
+        flash(f'Failed to load products: {str(e)}')
+        return redirect(url_for('buyer.dashboard'))
+    finally:
+        if conn:
+            conn.close()
+
+@buyer_blueprint.route('/add_to_cart/<int:product_id>', methods=['POST'])
+@login_required
+def add_to_cart(product_id):
+    quantity = int(request.form['quantity'])
+    buyer_id = session['buyer_id']
+
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.products'))
+
+        cursor = conn.cursor(dictionary=True)
+
+        # Check if the buyer has a cart
+        cursor.execute('SELECT CartId FROM Cart WHERE BuyerId = %s', (buyer_id,))
+        cart = cursor.fetchone()
+
+        if not cart:
+            cursor.execute('INSERT INTO Cart (BuyerId) VALUES (%s)', (buyer_id,))
+            conn.commit()
+            cart_id = cursor.lastrowid
+        else:
+            cart_id = cart['CartId']
+
+        # Add product to cart
+        cursor.execute('''
+            INSERT INTO CartItem (CartId, ProductId, Quantity)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE Quantity = Quantity + %s
+        ''', (cart_id, product_id, quantity, quantity))
+        conn.commit()
+
+        flash('Product added to cart successfully!')
+        return redirect(url_for('buyer.products'))
+    except Exception as e:
+        flash(f'Failed to add product to cart: {str(e)}')
+        return redirect(url_for('buyer.products'))
+    finally:
+        if conn:
+            conn.close()
+
+@buyer_blueprint.route('/cart')
+@login_required
+def cart():
+    buyer_id = session['buyer_id']
+
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.dashboard'))
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('''
+            SELECT p.ProductId, p.Name, p.Description, p.Price, ci.Quantity
+            FROM CartItem ci
+            JOIN Product p ON ci.ProductId = p.ProductId
+            JOIN Cart c ON ci.CartId = c.CartId
+            WHERE c.BuyerId = %s
+        ''', (buyer_id,))
+        cart_items = cursor.fetchall()
+
+        return render_template('buyer_cart.html', cart_items=cart_items)
+    except Exception as e:
+        flash(f'Failed to load cart: {str(e)}')
+        return redirect(url_for('buyer.dashboard'))
+    finally:
+        if conn:
+            conn.close()
+
+@buyer_blueprint.route('/remove_from_cart/<int:product_id>', methods=['POST'])
+@login_required
+def remove_from_cart(product_id):
+    buyer_id = session['buyer_id']
+
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.cart'))
+
+        cursor = conn.cursor(dictionary=True)
+
+        # Remove the product from the cart
+        cursor.execute('''
+            DELETE ci
+            FROM CartItem ci
+            JOIN Cart c ON ci.CartId = c.CartId
+            WHERE c.BuyerId = %s AND ci.ProductId = %s
+        ''', (buyer_id, product_id))
+        conn.commit()
+
+        flash('Product removed from cart successfully!')
+        return redirect(url_for('buyer.cart'))
+    except Exception as e:
+        flash(f'Failed to remove product from cart: {str(e)}')
+        return redirect(url_for('buyer.cart'))
+    finally:
+        if conn:
+            conn.close()
+
+@buyer_blueprint.route('/place_order', methods=['POST'])
+@login_required
+def place_order():
+    buyer_id = session['buyer_id']
+
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.cart'))
+
+        cursor = conn.cursor(dictionary=True)
+
+        # Fetch cart items and calculate total amount
+        cursor.execute('''
+            SELECT p.ProductId, p.Price, ci.Quantity
+            FROM CartItem ci
+            JOIN Product p ON ci.ProductId = p.ProductId
+            JOIN Cart c ON ci.CartId = c.CartId
+            WHERE c.BuyerId = %s
+        ''', (buyer_id,))
+        cart_items = cursor.fetchall()
+
+        if not cart_items:
+            flash('Your cart is empty')
+            return redirect(url_for('buyer.cart'))
+
+        total_amount = sum(item['Price'] * item['Quantity'] for item in cart_items)
+
+        # Insert order
+        cursor.execute('''
+            INSERT INTO Orders (BuyerId, TotalAmount, OrderStatus)
+            VALUES (%s, %s, %s)
+        ''', (buyer_id, total_amount, 'Placed'))
+        order_id = cursor.lastrowid
+
+        # Insert order items
+        for item in cart_items:
+            cursor.execute('''
+                INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice)
+                VALUES (%s, %s, %s, %s)
+            ''', (order_id, item['ProductId'], item['Quantity'], item['Price']))
+
+        # Clear cart
+        cursor.execute('''
+            DELETE ci
+            FROM CartItem ci
+            JOIN Cart c ON ci.CartId = c.CartId
+            WHERE c.BuyerId = %s
+        ''', (buyer_id,))
+
+        conn.commit()
+        flash('Order placed successfully!')
+        return redirect(url_for('buyer.order_placed'))
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        flash(f'Failed to place order: {str(e)}')
+        return redirect(url_for('buyer.cart'))
+    finally:
+        if conn:
+            conn.close()
+
+@buyer_blueprint.route('/order_placed')
+@login_required
+def order_placed():
+    return render_template('order_placed.html')
+
+@buyer_blueprint.route('/order_history')
+@login_required
+def order_history():
+    buyer_id = session['buyer_id']
+
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.dashboard'))
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('''
+            SELECT OrderId, OrderDate, TotalAmount, OrderStatus
+            FROM Orders
+            WHERE BuyerId = %s
+            ORDER BY OrderDate DESC
+        ''', (buyer_id,))
+        orders = cursor.fetchall()
+
+        return render_template('order_history.html', orders=orders)
+    except Exception as e:
+        flash(f'Failed to load order history: {str(e)}')
+        return redirect(url_for('buyer.dashboard'))
+    finally:
+        if conn:
+            conn.close()

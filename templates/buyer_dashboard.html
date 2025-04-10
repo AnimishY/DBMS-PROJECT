@@ -4,9 +4,21 @@
     <h1>Welcome, {{ buyer_name }}!</h1>
     <div class="dashboard-options">
         <a href="#" class="btn">Browse Products</a>
-        <a href="#" class="btn">View Cart</a>
+        <a href="{{ url_for('buyer.cart') }}" class="btn">View Cart</a>
         <a href="#" class="btn">Order History</a>
         <a href="{{ url_for('buyer.logout') }}" class="btn">Logout</a>
     </div>
+    {% for product in products %}
+    <div class="product">
+        <h3>{{ product['Name'] }}</h3>
+        <p>{{ product['Description'] }}</p>
+        <p>Price: ${{ product['Price'] }}</p>
+        <form method="POST" action="{{ url_for('buyer.add_to_cart', product_id=product['ProductId']) }}">
+            <label for="quantity">Quantity:</label>
+            <input type="number" name="quantity" min="1" value="1" required>
+            <button type="submit">Add to Cart</button>
+        </form>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

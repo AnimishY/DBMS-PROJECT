@@ -48,6 +48,7 @@ CREATE TABLE Product (
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (CategoryId) REFERENCES Category(CategoryId) ON DELETE NO ACTION,
     FOREIGN KEY (SellerId) REFERENCES Seller(SellerId) ON DELETE NO ACTION
+    -- there a property for product image as well which gives a path which is in statics/uploads
 );
 
 -- 5. Orders Table
