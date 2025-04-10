@@ -18,7 +18,7 @@
             <tr>
                 <td>{{ order.OrderId }}</td>
                 <td>{{ order.OrderDate }}</td>
-                <td>${{ order.TotalAmount }}</td>
+                <td>₹{{ order.TotalAmount }}</td>
                 <td>{{ order.OrderStatus }}</td>
             </tr>
             {% endfor %}

@@ -20,9 +20,9 @@
             <tr>
                 <td>{{ item.Name }}</td>
                 <td>{{ item.Description }}</td>
-                <td>${{ item.Price }}</td>
+                <td>₹{{ item.Price }}</td>
                 <td>{{ item.Quantity }}</td>
-                <td>${{ item.Price * item.Quantity }}</td>
+                <td>₹{{ item.Price * item.Quantity }}</td>
                 <td>
                     <form action="{{ url_for('buyer.remove_from_cart', product_id=item.ProductId) }}" method="POST" style="display:inline;">
                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>

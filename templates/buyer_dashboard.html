@@ -12,7 +12,7 @@
     <div class="product">
         <h3>{{ product['Name'] }}</h3>
         <p>{{ product['Description'] }}</p>
-        <p>Price: ${{ product['Price'] }}</p>
+        <p>Price: ₹{{ product['Price'] }}</p>
         <form method="POST" action="{{ url_for('buyer.add_to_cart', product_id=product['ProductId']) }}">
             <label for="quantity">Quantity:</label>
             <input type="number" name="quantity" min="1" value="1" required>
