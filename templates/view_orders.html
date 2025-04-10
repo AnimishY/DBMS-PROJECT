@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center">
+    <h1>Your Products</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" style="margin: 0 auto; text-align: center;">
+            <thead>
+                <tr>
+                    <th style="padding: 15px;">Product ID</th>
+                    <th style="padding: 15px;">Name</th>
+                    <th style="padding: 15px;">Description</th>
+                    <th style="padding: 15px;">Price</th>
+                    <th style="padding: 15px;">Stock</th>
+                    <th style="padding: 15px;">Category</th>
+                    <th style="padding: 15px;">Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td style="padding: 15px;">{{ product.ProductId }}</td>
+                    <td style="padding: 15px;">{{ product.Name }}</td>
+                    <td style="padding: 15px;">{{ product.Description }}</td>
+                    <td style="padding: 15px;">${{ product.Price }}</td>
+                    <td style="padding: 15px;">{{ product.Stock }}</td>
+                    <td style="padding: 15px;">{{ product.CategoryId }}</td>
+                    <td style="padding: 15px;">
+                        {% if product.image_path %}
+                        <img src="{{ url_for('static', filename='uploads/' + product.image_path) }}" alt="{{ product.Name }}" width="100">
+                        {% else %}
+                        <em>No Image</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{ url_for('seller.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

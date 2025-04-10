@@ -1,10 +1,18 @@
 from flask import Flask, redirect, url_for, render_template, session
+from flask_uploads import configure_uploads
 from config.schema import init_db
+from config.uploads import photos  # Import photos from the new module
 from routes.buyer_routes import buyer_blueprint
 from routes.seller_routes import seller_blueprint
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
+
+# Configure upload folder
+app.config['UPLOADED_PHOTOS_DEST'] = 'static/uploads'  # Folder to store images
+
+# Set up Flask-Uploads
+configure_uploads(app, photos)
 
 # Initialize database schema
 with app.app_context():

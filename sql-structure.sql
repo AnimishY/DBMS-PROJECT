@@ -44,6 +44,7 @@ CREATE TABLE Product (
     Description TEXT NULL,
     Price DECIMAL(10,2) NOT NULL,
     Stock INT NOT NULL,
+    image_path VARCHAR(255),  -- New column for image path
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (CategoryId) REFERENCES Category(CategoryId) ON DELETE NO ACTION,
     FOREIGN KEY (SellerId) REFERENCES Seller(SellerId) ON DELETE NO ACTION
