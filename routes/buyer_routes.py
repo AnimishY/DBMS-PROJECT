@@ -272,7 +272,7 @@ def place_order():
 
         # Fetch cart items and calculate total amount
         cursor.execute('''
-            SELECT p.ProductId, p.Price, ci.Quantity
+            SELECT p.ProductId, p.Price, p.Stock, ci.Quantity
             FROM CartItem ci
             JOIN Product p ON ci.ProductId = p.ProductId
             JOIN Cart c ON ci.CartId = c.CartId
@@ -284,7 +284,12 @@ def place_order():
             flash('Your cart is empty')
             return redirect(url_for('buyer.cart'))
 
-        total_amount = sum(item['Price'] * item['Quantity'] for item in cart_items)
+        total_amount = 0
+        for item in cart_items:
+            if item['Quantity'] > item['Stock']:
+                flash(f"Insufficient stock for product: {item['ProductId']}")
+                return redirect(url_for('buyer.cart'))
+            total_amount += item['Price'] * item['Quantity']
 
         # Insert order
         cursor.execute('''
@@ -293,12 +298,19 @@ def place_order():
         ''', (buyer_id, total_amount, 'Placed'))
         order_id = cursor.lastrowid
 
-        # Insert order items
+        # Insert order items and update product stock
         for item in cart_items:
             cursor.execute('''
                 INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice)
                 VALUES (%s, %s, %s, %s)
             ''', (order_id, item['ProductId'], item['Quantity'], item['Price']))
+
+            # Decrease stock
+            cursor.execute('''
+                UPDATE Product
+                SET Stock = Stock - %s
+                WHERE ProductId = %s
+            ''', (item['Quantity'], item['ProductId']))
 
         # Clear cart
         cursor.execute('''
