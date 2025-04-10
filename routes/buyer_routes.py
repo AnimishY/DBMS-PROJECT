@@ -287,7 +287,7 @@ def place_order():
         total_amount = 0
         for item in cart_items:
             if item['Quantity'] > item['Stock']:
-                flash(f"Insufficient stock for product: {item['ProductId']}")
+                flash(f"Insufficient stock for product: {item['ProductId']} (Available: {item['Stock']}, Requested: {item['Quantity']})")
                 return redirect(url_for('buyer.cart'))
             total_amount += item['Price'] * item['Quantity']
 
