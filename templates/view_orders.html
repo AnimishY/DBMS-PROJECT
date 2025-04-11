@@ -13,6 +13,7 @@
                 <th>Quantity</th>
                 <th>Total Amount</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -24,6 +25,10 @@
                 <td>{{ order.Quantity }}</td>
                 <td>₹{{ order.TotalAmount }}</td>
                 <td>{{ order.OrderStatus }}</td>
+                <td>
+                    <a href="{{ url_for('seller.buyer_details', buyer_id=order.BuyerId) }}" 
+                       class="btn btn-info btn-sm">View Buyer Details</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

@@ -319,10 +319,13 @@ def view_orders():
 
         # Fetch order history for the logged-in seller
         query = '''
-        SELECT o.OrderId, o.OrderDate, o.TotalAmount, o.OrderStatus, p.Name AS ProductName, oi.Quantity
+        SELECT o.OrderId, o.OrderDate, o.TotalAmount, o.OrderStatus, 
+               p.Name AS ProductName, oi.Quantity, b.BuyerId, 
+               CONCAT(b.BuyerFirstName, ' ', b.BuyerLastName) AS BuyerName
         FROM Orders o
         JOIN OrderItem oi ON o.OrderId = oi.OrderId
         JOIN Product p ON oi.ProductId = p.ProductId
+        JOIN Buyer b ON o.BuyerId = b.BuyerId
         WHERE p.SellerId = %s
         ORDER BY o.OrderDate DESC
         '''
@@ -333,6 +336,36 @@ def view_orders():
     except Exception as e:
         flash(f"Failed to load orders: {str(e)}", 'danger')
         return redirect(url_for('seller.dashboard'))
+    finally:
+        if conn:
+            conn.close()
+
+@seller_blueprint.route('/buyer-details/<int:buyer_id>', methods=['GET'])
+@seller_login_required
+def buyer_details(buyer_id):
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        cursor = conn.cursor(dictionary=True)
+
+        # Fetch buyer details
+        query = '''
+        SELECT BuyerFirstName, BuyerLastName, Email, AddressLine1, AddressLine2, 
+               City, States, PinCode
+        FROM Buyer
+        WHERE BuyerId = %s
+        '''
+        cursor.execute(query, (buyer_id,))
+        buyer = cursor.fetchone()
+
+        if not buyer:
+            flash('Buyer details not found.', 'danger')
+            return redirect(url_for('seller.view_orders'))
+
+        return render_template('buyer_details.html', buyer=buyer)
+    except Exception as e:
+        flash(f"Failed to load buyer details: {str(e)}", 'danger')
+        return redirect(url_for('seller.view_orders'))
     finally:
         if conn:
             conn.close()

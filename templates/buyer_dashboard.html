@@ -5,11 +5,16 @@
     <div class="dashboard-options">
         <a href="#" class="btn">Browse Products</a>
         <a href="{{ url_for('buyer.cart') }}" class="btn">View Cart</a>
-        <a href="#" class="btn">Order History</a>
+        <a href="{{ url_for('buyer.order_history') }}" class="btn">Order History</a> <!-- Added link to Order History -->
         <a href="{{ url_for('buyer.logout') }}" class="btn">Logout</a>
     </div>
     {% for product in products %}
     <div class="product">
+        {% if product['image_path'] %}
+        <img src="{{ url_for('static', filename='uploads/' + product['image_path']) }}" alt="{{ product['Name'] }}" width="150">
+        {% else %}
+        <p><em>No Image Available</em></p>
+        {% endif %}
         <h3>{{ product['Name'] }}</h3>
         <p>{{ product['Description'] }}</p>
         <p>Price: ₹{{ product['Price'] }}</p>

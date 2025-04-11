@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Buyer Details</h1>
+    <p><strong>Name:</strong> {{ buyer.BuyerFirstName }} {{ buyer.BuyerLastName }}</p>
+    <p><strong>Email:</strong> {{ buyer.Email }}</p>
+    <p><strong>Address:</strong> {{ buyer.AddressLine1 }}, {{ buyer.AddressLine2 or '' }},
+        {{ buyer.City }}, {{ buyer.States }}, {{ buyer.PinCode }}</p>
+    <a href="{{ url_for('seller.view_orders') }}" class="btn btn-secondary">Back to Orders</a>
+</div>
+{% endblock %}
