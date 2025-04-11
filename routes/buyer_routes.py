@@ -141,8 +141,34 @@ def products():
             return redirect(url_for('buyer.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product')
+
+        # Get filter and sort parameters from the request
+        min_price = request.args.get('min_price', type=float)
+        max_price = request.args.get('max_price', type=float)
+        sort = request.args.get('sort')
+
+        # Build the query dynamically
+        query = 'SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product WHERE 1=1'
+        params = []
+
+        if min_price is not None:
+            query += ' AND Price >= %s'
+            params.append(min_price)
+        if max_price is not None:
+            query += ' AND Price <= %s'
+            params.append(max_price)
+
+        # Add sorting logic
+        if sort == 'name':
+            query += ' ORDER BY Name ASC'
+        elif sort == 'price':
+            query += ' ORDER BY Price ASC'
+        else:
+            query += ' ORDER BY ProductId ASC'  # Default sorting
+
+        cursor.execute(query, tuple(params))
         products = cursor.fetchall()
+
         return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'), products=products)
     except Exception as e:
         flash(f'Failed to load products: {str(e)}')
