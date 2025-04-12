@@ -33,11 +33,12 @@
         </tbody>
     </table>
     <form action="{{ url_for('buyer.place_order') }}" method="POST">
-        <button type="submit" class="btn btn-success">Order Now</button>
+        <button type="submit" class="btn btn-secondary">Order Now</button>
     </form>
     {% else %}
     <p>Your cart is empty.</p>
     {% endif %}
+    <br>
     <a href="{{ url_for('buyer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
 {% endblock %}
