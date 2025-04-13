@@ -5,7 +5,7 @@ import sys
 def connect_to_mysql():
     try:
         connection = mysql.connector.connect(
-            host="animish",
+            host="simply_shubhi",
             user="admin",
             password="admin",
             database="virus",
