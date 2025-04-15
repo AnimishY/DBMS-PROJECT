@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #fff3e6 0%, #ffe4e6 100%);
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h1, h2 {
+        color: #1a1a1a;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+        color: #ea580c;
+    }
+
+    .analytics-summary {
+        background-color: #fff3e6;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .total-revenue {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ea580c;
+    }
+
+    .analytics-section {
+        margin-bottom: 3rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+    }
+
+    th, td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+        background-color: #fff3e6;
+        color: #ea580c;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    td {
+        font-size: 1rem;
+        color: #4b5563;
+    }
+
+    .product-card {
+        display: flex;
+        background: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        align-items: center;
+    }
+
+    .product-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        margin-right: 1.5rem;
+    }
+
+    .product-details {
+        flex-grow: 1;
+    }
+
+    .product-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-stats {
+        display: flex;
+        gap: 2rem;
+    }
+
+    .stat {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #ea580c;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #4b5563;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: white;
+        background-color: #ea580c;
+        border: none;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: background 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        background-color: #c2410c;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="container">
+    <h1>Sales Analytics for {{ store_name }}</h1>
+    
+    <div class="analytics-summary">
+        <h2>Total Revenue</h2>
+        <div class="total-revenue">₹{{ "%.2f"|format(total_revenue) }}</div>
+    </div>
+    
+    <div class="analytics-section">
+        <h2>Monthly Revenue ({{ months[0] if months else 'No data' }} - {{ months[-1] if months else '' }})</h2>
+        {% if months %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(months|length) %}
+                    <tr>
+                        <td>{{ months[i] }}</td>
+                        <td>₹{{ "%.2f"|format(monthly_revenue[i]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No monthly revenue data available for this year.</p>
+        {% endif %}
+    </div>
+    
+    <div class="analytics-section">
+        <h2>Category-wise Revenue</h2>
+        {% if category_data %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in category_data %}
+                    <tr>
+                        <td>{{ category.CategoryName }}</td>
+                        <td>₹{{ "%.2f"|format(category.Revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No category-wise revenue data available.</p>
+        {% endif %}
+    </div>
+    
+    <div class="analytics-section">
+        <h2>Top 5 Products</h2>
+        {% if top_products %}
+            {% for product in top_products %}
+                <div class="product-card">
+                    {% if product.image_path %}
+                        <img src="{{ url_for('static', filename='uploads/' + product.image_path) }}" alt="{{ product.Name }}" class="product-image">
+                    {% else %}
+                        <div class="product-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                            <p><em>No Image</em></p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="product-details">
+                        <div class="product-name">{{ product.Name }}</div>
+                        <div class="product-stats">
+                            <div class="stat">
+                                <span class="stat-value">{{ product.TotalQuantitySold }}</span>
+                                <span class="stat-label">Units Sold</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">₹{{ "%.2f"|format(product.TotalRevenue) }}</span>
+                                <span class="stat-label">Total Revenue</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No product sales data available.</p>
+        {% endif %}
+    </div>
+    
+    <div class="btn-group">
+        <a href="{{ url_for('seller.dashboard') }}" class="btn">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

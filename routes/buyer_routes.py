@@ -147,12 +147,25 @@ def products():
 
         cursor = conn.cursor(dictionary=True)
 
+        # Fetch top 5 most sold products
+        top_products_query = '''
+            SELECT p.ProductId, p.Name, p.Description, p.Price, p.Stock, p.image_path, 
+                   SUM(oi.Quantity) AS total_sold
+            FROM Product p
+            JOIN OrderItem oi ON p.ProductId = oi.ProductId
+            GROUP BY p.ProductId
+            ORDER BY total_sold DESC
+            LIMIT 5
+        '''
+        cursor.execute(top_products_query)
+        top_products = cursor.fetchall()
+
         # Get filter and sort parameters from the request
         min_price = request.args.get('min_price', type=float)
         max_price = request.args.get('max_price', type=float)
         sort = request.args.get('sort')
 
-        # Build the query dynamically
+        # Build the query dynamically for all products
         query = 'SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product WHERE 1=1'
         params = []
 
@@ -174,7 +187,8 @@ def products():
         cursor.execute(query, tuple(params))
         products = cursor.fetchall()
 
-        return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'), products=products)
+        return render_template('buyer_dashboard.html', buyer_name=session.get('buyer_name'), 
+                               top_products=top_products, products=products)
     except Exception as e:
         flash(f'Failed to load products: {str(e)}')
         return redirect(url_for('buyer.dashboard'))
@@ -382,10 +396,13 @@ def order_history():
 
         cursor = conn.cursor(dictionary=True)
         cursor.execute('''
-            SELECT OrderId, OrderDate, TotalAmount, OrderStatus
-            FROM Orders
-            WHERE BuyerId = %s
-            ORDER BY OrderDate DESC
+            SELECT o.OrderId, o.OrderDate, o.TotalAmount, o.OrderStatus,
+                   s.ShipmentId, s.ShipmentDate, s.DeliveryDate, 
+                   s.ShippingMethod, s.TrackingNumber 
+            FROM Orders o
+            LEFT JOIN Shipment s ON o.OrderId = s.OrderId
+            WHERE o.BuyerId = %s
+            ORDER BY o.OrderDate DESC
         ''', (buyer_id,))
         orders = cursor.fetchall()
 
@@ -396,7 +413,54 @@ def order_history():
     finally:
         if conn:
             conn.close()
+
+@buyer_blueprint.route('/track_order/<int:order_id>')
+@login_required
+def track_order(order_id):
+    buyer_id = session['buyer_id']
+    conn = None
+    
+    try:
+        conn = connect_to_mysql()
+        cursor = conn.cursor(dictionary=True)
+        
+        # First verify this order belongs to the logged-in buyer
+        cursor.execute('''
+            SELECT o.OrderId FROM Orders o
+            WHERE o.OrderId = %s AND o.BuyerId = %s
+        ''', (order_id, buyer_id))
+        
+        if not cursor.fetchone():
+            flash('Order not found or unauthorized access')
+            return redirect(url_for('buyer.order_history'))
             
+        # Get detailed tracking information
+        cursor.execute('''
+            SELECT o.OrderId, o.OrderDate, o.TotalAmount, o.OrderStatus,
+                   s.ShipmentDate, s.DeliveryDate, s.ShippingMethod, s.TrackingNumber,
+                   p.Name as ProductName, oi.Quantity, oi.UnitPrice
+            FROM Orders o
+            LEFT JOIN Shipment s ON o.OrderId = s.OrderId
+            JOIN OrderItem oi ON o.OrderId = oi.OrderId
+            JOIN Product p ON oi.ProductId = p.ProductId
+            WHERE o.OrderId = %s
+        ''', (order_id,))
+        
+        tracking_info = cursor.fetchall()
+        
+        if not tracking_info:
+            flash('No details found for this order')
+            return redirect(url_for('buyer.order_history'))
+            
+        return render_template('track_order.html', order_details=tracking_info)
+        
+    except Exception as e:
+        flash(f'Failed to load tracking information: {str(e)}')
+        return redirect(url_for('buyer.order_history'))
+    finally:
+        if conn:
+            conn.close()
+
 @buyer_blueprint.route('/ai_search', methods=['GET', 'POST'])
 @login_required
 def ai_search():
