@@ -1,3 +1,8 @@
+import os
+import json
+import google.generativeai as genai
+from flask import Flask, session
+from flask_uploads import UploadSet, configure_uploads, IMAGES
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -388,6 +393,110 @@ def order_history():
     except Exception as e:
         flash(f'Failed to load order history: {str(e)}')
         return redirect(url_for('buyer.dashboard'))
+    finally:
+        if conn:
+            conn.close()
+            
+@buyer_blueprint.route('/ai_search', methods=['GET', 'POST'])
+@login_required
+def ai_search():
+    conn = None
+    try:
+        conn = connect_to_mysql()
+        if not conn:
+            flash('Database connection failed')
+            return redirect(url_for('buyer.dashboard'))
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT ProductId, Name, Description, Price, Stock, image_path FROM Product')
+        products = cursor.fetchall()
+
+        if request.method == 'POST':
+            user_input = request.form.get('search_query', '').strip()
+            if not user_input:
+                flash('Please enter a search query.')
+                return render_template('ai_search.html')
+
+            try:
+                # Configure API - use a hardcoded API key for now, replace with environment variable in production
+                api_key = "AIzaSyC05dOo51w_MBUM6f3oH9Lvo-MeSbnzTRE"  # This should be stored in environment variables
+                genai.configure(api_key=api_key)
+
+                # For debugging - see what models are available
+                print("Available models:")
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        print(m.name)
+
+                # Create a simplified product list with only necessary fields
+                simplified_products = []
+                for p in products:
+                    simplified_products.append({
+                        "ProductId": p["ProductId"],
+                        "Name": p["Name"],
+                        "Description": p["Description"],
+                        "Price": float(p["Price"]) if p["Price"] else 0,
+                        "Stock": p["Stock"]
+                    })
+
+                # Use the model directly through GenerativeModel
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                prompt = f"""
+                You are a smart product recommendation assistant. A user searched for: "{user_input}".
+                Based on this search query, find the 5 most relevant products from this list:
+                
+                {simplified_products}
+                
+                Return ONLY a JSON array of exactly 5 product objects with exactly these fields from the original data:
+                ProductId, Name, Description, Price, Stock, image_path.
+                
+                Format your response as a valid JSON array that can be parsed with json.loads().
+                """
+                
+                response = model.generate_content(prompt)
+                
+                # Extract the text from the response
+                ai_output = response.text.strip()
+                
+                # Find JSON array in the response - sometimes the AI includes explanation text
+                import re
+                json_match = re.search(r'\[.*\]', ai_output, re.DOTALL)
+                if json_match:
+                    ai_output = json_match.group(0)
+                
+                print("AI OUTPUT:", ai_output)
+                
+                # Parse the JSON response
+                top_products = json.loads(ai_output)
+                
+                # Ensure we have exactly 5 products, or take what we have
+                if not isinstance(top_products, list):
+                    top_products = []
+                    flash("The AI couldn't find relevant products. Showing random selections instead.")
+                    # Fall back to some products from our database
+                    top_products = products[:5] if len(products) >= 5 else products
+                
+                return render_template('ai_search_results.html', products=top_products, query=user_input)
+
+            except json.JSONDecodeError as je:
+                print("JSON Decode Error:", str(je))
+                print("AI Response:", ai_output if 'ai_output' in locals() else "No response")
+                flash('AI response format error. Showing all products instead.')
+                return render_template('ai_search_results.html', products=products[:5], query=user_input)
+            
+            except Exception as e:
+                print("AI Search Error:", str(e))
+                flash(f'Search error: {str(e)}. Showing all products.')
+                return render_template('ai_search_results.html', products=products[:5], query=user_input)
+
+        # GET request - show search form
+        return render_template('ai_search.html')
+
+    except Exception as e:
+        flash(f'Error during AI search: {str(e)}')
+        return redirect(url_for('buyer.dashboard'))
+
     finally:
         if conn:
             conn.close()

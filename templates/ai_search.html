@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #fff3e6 0%, #ffe4e6 100%);
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        color: #1a1a1a;
+        margin-bottom: 2rem;
+    }
+
+    .search-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    label {
+        font-size: 1.1rem;
+        color: #4b5563;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        max-width: 500px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+        border-color: #ea580c;
+        outline: none;
+    }
+
+    button[type="submit"] {
+        padding: 0.75rem 1.5rem;
+        background: #ea580c;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    button[type="submit"]:hover {
+        background: #c2410c;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 2rem;
+        color: #4b5563;
+        text-decoration: none;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container">
+    <h1>AI Product Search</h1>
+    <p>Describe the product you're looking for, and our AI will find the best matches!</p>
+    
+    <form method="POST" action="{{ url_for('buyer.ai_search') }}" class="search-form">
+        <label for="search_query">What are you looking for?</label>
+        <input type="text" id="search_query" name="search_query" placeholder="e.g. stylish red shoes, comfortable office chair, etc." required>
+        <button type="submit">Search Products</button>
+    </form>
+    
+    <a href="{{ url_for('buyer.dashboard') }}" class="back-link">← Back to Dashboard</a>
+</div>
+{% endblock %}

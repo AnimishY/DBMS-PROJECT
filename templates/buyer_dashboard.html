@@ -181,6 +181,9 @@
                 <a href="{{ url_for('buyer.products') }}" class="btn">Browse Products</a>
                 <a href="{{ url_for('buyer.cart') }}" class="btn">View Cart</a>
                 <a href="{{ url_for('buyer.order_history') }}" class="btn">Order History</a>
+                <!-- Add option for AI based product search -->
+                <a href="{{ url_for('buyer.ai_search') }}" class="btn">AI Product Search</a>
+
             </div>
             <div>
                 <a href="{{ url_for('buyer.logout') }}" class="btn btn-secondary">Logout</a>
@@ -211,8 +214,8 @@
             </div>
             <div class="col-md-9">
                 <div class="sorting-options">
-                    <button class="btn btn-secondary" onclick="sortTable('name')">Sort by Name</button>
-                    <button class="btn btn-secondary" onclick="sortTable('price')">Sort by Price</button>
+                    <a href="{{ url_for('buyer.products', min_price=request.args.get('min_price'), max_price=request.args.get('max_price'), sort='name') }}" class="btn btn-secondary">Sort by Name</a>
+                    <a href="{{ url_for('buyer.products', min_price=request.args.get('min_price'), max_price=request.args.get('max_price'), sort='price') }}" class="btn btn-secondary">Sort by Price</a>
                 </div>
                 <div class="product-grid">
                     {% for product in products %}
@@ -239,12 +242,5 @@
             </div>
         </div>
     </div>
-    <script>
-        function sortTable(criteria) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('sort', criteria);
-            window.location.href = url.toString();
-        }
-    </script>
 </body>
 </html>

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #fff3e6 0%, #ffe4e6 100%);
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .search-query {
+        text-align: center;
+        color: #ea580c;
+        font-style: italic;
+        margin-bottom: 2rem;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .product-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: #1a1a1a;
+    }
+
+    .product-card p {
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-card .price {
+        font-weight: bold;
+        color: #ea580c;
+        font-size: 1.1rem;
+    }
+
+    .product-card .stock {
+        color: #10b981;
+        font-size: 0.9rem;
+    }
+
+    .product-card form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        background: #f9fafb;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+    }
+
+    .qtyin {
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+    }
+    
+    input.qtyin {
+        width: 100%;
+    }
+
+    .btn {
+        padding: 0.6rem 1rem;
+        background: #ea580c;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        text-align: center;
+    }
+
+    .btn:hover {
+        background: #c2410c;
+    }
+    
+    .actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        gap: 1rem;
+    }
+    
+    .btn-secondary {
+        background: #4b5563;
+    }
+    
+    .btn-secondary:hover {
+        background: #374151;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container">
+    <h1>AI Search Results</h1>
+    <p class="search-query">For: "{{ query }}"</p>
+    
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                {% if product['image_path'] %}
+                <img src="{{ url_for('static', filename='uploads/' + product['image_path']) }}" alt="{{ product['Name'] }}" class="product-image">
+                {% else %}
+                <div class="product-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                    <p><em>No Image Available</em></p>
+                </div>
+                {% endif %}
+                <h3>{{ product['Name'] }}</h3>
+                <p>{{ product['Description'] }}</p>
+                <p class="price">Price: ₹{{ product['Price'] }}</p>
+                <p class="stock">Stock Left: {{ product['Stock'] }}</p>
+                <form method="POST" action="{{ url_for('buyer.add_to_cart', product_id=product['ProductId']) }}">
+                    <label for="quantity" class="qtyin">Quantity:</label>
+                    <input type="number" name="quantity" id="quantity" min="1" max="{{ product['Stock'] }}" value="1" required class="qtyin">
+                    <button type="submit" class="btn">Add to Cart</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <p>No products found matching your search. Please try a different query.</p>
+        </div>
+    {% endif %}
+    
+    <div class="actions">
+        <a href="{{ url_for('buyer.ai_search') }}" class="btn">New Search</a>
+        <a href="{{ url_for('buyer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
