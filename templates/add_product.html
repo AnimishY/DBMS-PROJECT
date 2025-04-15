@@ -31,9 +31,10 @@
                 <div class="form-group mb-3">
                     <label for="category_id">Category</label>
                     <select name="category_id" class="form-control">
-                        {% for category in categories %}
-                            <option value="{{ category.CategoryId }}">{{ category.Name }}</option>
-                        {% endfor %}
+                        <option value="1">Category 1</option>
+                        <option value="2">Category 2</option>
+                        <option value="3">Category 3</option>
+                        <!-- Add more categories as needed -->
                     </select>
                 </div>
 

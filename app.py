@@ -4,7 +4,6 @@ from config.schema import init_db
 from config.uploads import photos  # Import photos from the new module
 from routes.buyer_routes import buyer_blueprint
 from routes.seller_routes import seller_blueprint
-from routes.admin_routes import admin_blueprint  # Import the new admin blueprint
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
@@ -22,7 +21,6 @@ with app.app_context():
 # Register blueprints
 app.register_blueprint(seller_blueprint, url_prefix='/seller')
 app.register_blueprint(buyer_blueprint, url_prefix='/buyer')
-app.register_blueprint(admin_blueprint, url_prefix='/admin')  # Register admin blueprint
 
 @app.route('/')
 def home():
