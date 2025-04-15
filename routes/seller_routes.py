@@ -209,9 +209,17 @@ def add_product_confirmation():
 def manage_products():
     conn = None
     cursor = None
+    low_stock_threshold = 5  # Default value
     try:
         conn = connect_to_mysql()
         cursor = conn.cursor(dictionary=True)
+        
+        # Fetch the seller's low stock threshold
+        threshold_query = "SELECT LowStockThreshold FROM Seller WHERE SellerId = %s"
+        cursor.execute(threshold_query, (session['seller_id'],))
+        result = cursor.fetchone()
+        if result:
+            low_stock_threshold = result['LowStockThreshold']
         
         # Fetch products for the logged-in seller
         query = """
@@ -230,7 +238,7 @@ def manage_products():
         if conn:
             conn.close()
     
-    return render_template('manage_products.html', products=products)
+    return render_template('manage_products.html', products=products, low_stock_threshold=low_stock_threshold)
 
 @seller_blueprint.route('/edit-product/<int:product_id>', methods=['GET', 'POST'])
 @seller_login_required
@@ -652,3 +660,30 @@ def analytics():
             cursor.close()
         if conn:
             conn.close()
+
+@seller_blueprint.route('/update-low-stock-threshold', methods=['POST'])
+@seller_login_required
+def update_low_stock_threshold():
+    new_threshold = request.form.get('low_stock_threshold')
+    conn = None
+    cursor = None
+    try:
+        conn = connect_to_mysql()
+        cursor = conn.cursor()
+        
+        # Update the seller's low stock threshold
+        query = "UPDATE Seller SET LowStockThreshold = %s WHERE SellerId = %s"
+        cursor.execute(query, (new_threshold, session['seller_id']))
+        conn.commit()
+        
+        flash('Low stock threshold updated successfully!', 'success')
+    except Exception as e:
+        flash(f"Error updating low stock threshold: {str(e)}", 'danger')
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    
+    return redirect(url_for('seller.manage_products'))
+
