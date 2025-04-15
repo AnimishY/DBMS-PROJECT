@@ -1,0 +1,18 @@
+<!-- Apply the spacing classes to fix overlap issues -->
+<div class="revenue-container">
+    {% for category, amount in revenue_by_category.items() %}
+    <div class="revenue-item">
+        <span class="revenue-label">{{ category }}</span>
+        <span class="revenue-value">{{ amount }}</span>
+    </div>
+    {% endfor %}
+    
+    <div class="total-revenue">
+        <span>Total Revenue</span>
+        <span>{{ total_revenue }}</span>
+    </div>
+</div>
+
+<div class="back-button-container">
+    <a href="{{ url_for('seller.dashboard') }}" class="btn btn-secondary dashboard-button">Back to Dashboard</a>
+</div>

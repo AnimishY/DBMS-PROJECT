@@ -132,6 +132,23 @@
             color: #4b5563;
         }
 
+        .admin-login {
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        .admin-link {
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .admin-link:hover {
+            color: #ea580c;
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2.5rem;
@@ -184,6 +201,10 @@
                     <a href="/seller/register" class="btn btn-outline">Sign Up</a>
                 </div>
             </div>
+        </div>
+
+        <div class="admin-login">
+            <a href="/admin/login" class="admin-link">Admin Login</a>
         </div>
 
         <div class="footer">

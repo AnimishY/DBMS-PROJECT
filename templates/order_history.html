@@ -70,6 +70,46 @@
         text-align: center;
         margin-top: 2rem;
     }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.4em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        color: white;
+    }
+
+    .badge-primary {
+        background-color: #3b82f6;
+    }
+
+    .badge-success {
+        background-color: #10b981;
+    }
+
+    .badge-warning {
+        background-color: #f59e0b;
+    }
+
+    .badge-secondary {
+        background-color: #6b7280;
+    }
+
+    .tracking-info {
+        font-size: 0.9rem;
+        color: #4b5563;
+        margin-top: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 </style>
 
 <div class="container">
@@ -82,6 +122,8 @@
                 <th>Order Date</th>
                 <th>Total Amount</th>
                 <th>Status</th>
+                <th>Tracking Info</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -90,7 +132,31 @@
                 <td>{{ order.OrderId }}</td>
                 <td>{{ order.OrderDate }}</td>
                 <td>₹{{ order.TotalAmount }}</td>
-                <td>{{ order.OrderStatus }}</td>
+                <td>
+                    <span class="badge 
+                        {% if order.OrderStatus == 'Delivered' %}badge-success
+                        {% elif order.OrderStatus == 'Shipped' %}badge-primary
+                        {% elif order.OrderStatus == 'Processing' %}badge-warning
+                        {% else %}badge-secondary{% endif %}">
+                        {{ order.OrderStatus }}
+                    </span>
+                </td>
+                <td>
+                    {% if order.ShipmentId %}
+                        <div class="tracking-info">
+                            <strong>Shipped:</strong> {{ order.ShipmentDate.strftime('%Y-%m-%d') if order.ShipmentDate else 'N/A' }}<br>
+                            <strong>Carrier:</strong> {{ order.ShippingMethod or 'N/A' }}<br>
+                            <strong>Tracking #:</strong> {{ order.TrackingNumber or 'N/A' }}
+                        </div>
+                    {% elif order.OrderStatus == 'Placed' or order.OrderStatus == 'Processing' %}
+                        <span class="badge badge-secondary">Awaiting Shipment</span>
+                    {% else %}
+                        <span class="badge badge-secondary">No Tracking Info</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('buyer.track_order', order_id=order.OrderId) }}" class="btn btn-sm" style="background-color: #ea580c; color: white;">View Details</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

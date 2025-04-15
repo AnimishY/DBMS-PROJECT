@@ -94,6 +94,36 @@
         margin-bottom: 2rem;
     }
 
+    /* Additional styles for shipment buttons */
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+    }
+
+    .badge-success {
+        background-color: #10b981;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #f59e0b;
+        color: white;
+    }
+
+    .badge-info {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .badge-secondary {
+        background-color: #6b7280;
+        color: white;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         table {
@@ -119,6 +149,7 @@
                     <th>Quantity</th>
                     <th>Total Amount</th>
                     <th>Status</th>
+                    <th>Shipment</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -130,10 +161,33 @@
                     <td>{{ order.ProductName }}</td>
                     <td>{{ order.Quantity }}</td>
                     <td>₹{{ order.TotalAmount }}</td>
-                    <td>{{ order.OrderStatus }}</td>
                     <td>
-                        <a href="{{ url_for('seller.buyer_details', buyer_id=order.BuyerId) }}" 
-                           class="btn btn-info btn-sm">View Buyer Details</a>
+                        <span class="badge 
+                            {% if order.OrderStatus == 'Delivered' %}badge-success
+                            {% elif order.OrderStatus == 'Shipped' %}badge-info
+                            {% elif order.OrderStatus == 'Processing' %}badge-warning
+                            {% else %}badge-secondary{% endif %}">
+                            {{ order.OrderStatus }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if order.ShipmentId %}
+                            <a href="{{ url_for('seller.view_shipment', order_id=order.OrderId) }}" 
+                               class="btn btn-sm btn-info">View Shipment</a>
+                        {% elif order.OrderStatus != 'Cancelled' %}
+                            <a href="{{ url_for('seller.add_shipment', order_id=order.OrderId) }}" 
+                               class="btn btn-sm">Add Shipment</a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ url_for('seller.update_order', order_id=order.OrderId) }}" 
+                               class="btn btn-sm">Update Status</a>
+                            <a href="{{ url_for('seller.buyer_details', buyer_id=order.BuyerId) }}" 
+                               class="btn btn-info btn-sm">View Buyer</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
