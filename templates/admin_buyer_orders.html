@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Orders for Buyer ID: {{ buyer_id }}</h1>
+    {% if buyer_details %}
+    <div class="buyer-details">
+        <p><strong>Name:</strong> {{ buyer_details.BuyerFirstName }} {{ buyer_details.BuyerLastName }}</p>
+        <p><strong>Email:</strong> {{ buyer_details.Email }}</p>
+        <p><strong>Address:</strong> {{ buyer_details.AddressLine1 }}, 
+            {{ buyer_details.AddressLine2 or '' }}, 
+            {{ buyer_details.City }}, {{ buyer_details.States }}, {{ buyer_details.PinCode }}</p>
+    </div>
+    {% endif %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Order Date</th>
+                <th>Total Amount</th>
+                <th>Order Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.OrderId }}</td>
+                <td>{{ order.OrderDate }}</td>
+                <td>₹{{ order.TotalAmount }}</td>
+                <td>{{ order.OrderStatus }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

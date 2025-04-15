@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #fff3e6 0%, #ffe4e6 100%);
+    }
+
+    .container {
+        max-width: 600px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2.2rem;
+        color: #1a1a1a;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    select.form-control {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: white;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: white;
+        background-color: #ea580c;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+        background-color: #c2410c;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="container">
+    <h1>Update Order Status</h1>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="order_id">Order ID</label>
+            <input type="text" id="order_id" class="form-control" value="{{ order.OrderId }}" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label for="order_status">Order Status</label>
+            <select id="order_status" name="order_status" class="form-control" required>
+                <option value="Placed" {% if order.OrderStatus == 'Placed' %}selected{% endif %}>Placed</option>
+                <option value="Processing" {% if order.OrderStatus == 'Processing' %}selected{% endif %}>Processing</option>
+                <option value="Shipped" {% if order.OrderStatus == 'Shipped' %}selected{% endif %}>Shipped</option>
+                <option value="Delivered" {% if order.OrderStatus == 'Delivered' %}selected{% endif %}>Delivered</option>
+                <option value="Cancelled" {% if order.OrderStatus == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        
+        <div class="buttons">
+            <a href="{{ url_for('seller.view_orders') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Update Status</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

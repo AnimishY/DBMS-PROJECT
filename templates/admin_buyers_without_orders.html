@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Buyers Without Orders</h1>
+    {% if buyers %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Buyer ID</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for buyer in buyers %}
+            <tr>
+                <td>{{ buyer.BuyerId }}</td>
+                <td>{{ buyer.name }}</td>
+                <td>{{ buyer.Email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No buyers found without orders.</p>
+    {% endif %}
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2.5rem;
+        color: #1a1a1a;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: white;
+        background-color: #4b5563;
+        border: none;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: background 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        background-color: #374151;
+    }
+
+    .btn-active {
+        background-color: #2563eb;
+    }
+
+    .btn-active:hover {
+        background-color: #1d4ed8;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    thead {
+        background-color: #4b5563;
+        color: white;
+    }
+
+    th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+    }
+
+    tbody tr:hover {
+        background-color: #f3f4f6;
+    }
+
+    .back-btn {
+        display: block;
+        width: 150px;
+        margin: 2rem auto 0;
+    }
+
+    .report-title {
+        text-align: center;
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        color: #2563eb;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+        font-style: italic;
+    }
+</style>
+
+<div class="container">
+    <h1>Analytics Dashboard</h1>
+    <div class="analytics-buttons">
+        <a href="{{ url_for('admin.analytics', report='active_buyers') }}" class="btn {% if report == 'active_buyers' %}btn-active{% endif %}">Top Buyers</a>
+        <a href="{{ url_for('admin.analytics', report='top_products') }}" class="btn {% if report == 'top_products' %}btn-active{% endif %}">Top Products</a>
+        <a href="{{ url_for('admin.analytics', report='top_sellers') }}" class="btn {% if report == 'top_sellers' %}btn-active{% endif %}">Top Sellers</a>
+        <a href="{{ url_for('admin.analytics', report='buyers_without_orders') }}" class="btn {% if report == 'buyers_without_orders' %}btn-active{% endif %}">Buyers Without Orders</a>
+    </div>
+
+    {% if report == 'active_buyers' %}
+    <h2>Most Active Buyers (Top 5)</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Order Count</th>
+                <th>Total Spent</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for buyer in active_buyers %}
+            <tr>
+                <td>{{ buyer.user_id }}</td>
+                <td>{{ buyer.name }}</td>
+                <td>{{ buyer.email }}</td>
+                <td>{{ buyer.order_count }}</td>
+                <td>₹{{ buyer.total_spent }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif report == 'top_products' %}
+    <h2>Top Sold Products (Top 5)</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Total Quantity Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in top_products %}
+            <tr>
+                <td>{{ product.ProductId }}</td>
+                <td>{{ product.product_name }}</td>
+                <td>{{ product.total_quantity_sold }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif report == 'top_sellers' %}
+    <h2>Top Sellers (Top 5)</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Seller ID</th>
+                <th>Store Name</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for seller in top_sellers %}
+            <tr>
+                <td>{{ seller.SellerId }}</td>
+                <td>{{ seller.StoreName }}</td>
+                <td>₹{{ seller.total_revenue }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif report == 'buyers_without_orders' %}
+    <h2>Buyers Without Orders</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Buyer ID</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for buyer in buyers %}
+            <tr>
+                <td>{{ buyer.BuyerId }}</td>
+                <td>{{ buyer.name }}</td>
+                <td>{{ buyer.Email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

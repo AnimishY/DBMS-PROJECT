@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% if seller_details %}
+    <h1>Sales Report for Seller: {{ seller_details.StoreName }}</h1>
+    <div class="seller-details">
+        <p><strong>Seller ID:</strong> {{ seller_details.SellerId }}</p>
+        <p><strong>Contact:</strong> {{ seller_details.SellerContact }}</p>
+        <p><strong>Email:</strong> {{ seller_details.Email }}</p>
+        <p><strong>Address:</strong> {{ seller_details.StoreAddressLine1 }}, 
+            {{ seller_details.StoreAddressLine2 or '' }}, 
+            {{ seller_details.City }}, {{ seller_details.States }}, {{ seller_details.PinCode }}</p>
+    </div>
+    {% endif %}
+    
+    <h2>Total Revenue</h2>
+    <p><strong>₹{{ seller_details.total_revenue }}</strong></p>
+    
+    <h2>All Products</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Current Stock</th>
+                <th>Total Quantity Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in sales_stats %}
+            <tr>
+                <td>{{ product.ProductId }}</td>
+                <td>{{ product.product_name }}</td>
+                <td>{{ product.current_stock }}</td>
+                <td>{{ product.total_quantity_sold }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin.seller_sales_input') }}" class="btn btn-secondary">Back to Seller Input</a>
+</div>
+{% endblock %}
