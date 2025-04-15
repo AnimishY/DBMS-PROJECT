@@ -1,8 +1,11 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from functools import wraps
-from config.database import connect_to_mysql  # Ensure database connection is imported
+# Ensure database connection is imported
+from config.database import connect_to_mysql
+from datetime import datetime
 
 admin_blueprint = Blueprint('admin', __name__)
+
 
 def admin_login_required(f):
     @wraps(f)
@@ -13,12 +16,13 @@ def admin_login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @admin_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         # Hardcoded admin credentials
         if username == 'admin' and password == 'admin':
             session['admin_id'] = 'admin'
@@ -28,13 +32,15 @@ def login():
         else:
             flash('Invalid admin credentials')
             return redirect(url_for('admin.login'))
-            
+
     return render_template('admin_login.html')
+
 
 @admin_blueprint.route('/dashboard')
 @admin_login_required
 def dashboard():
     return render_template('admin_dashboard.html', admin_name=session.get('admin_name'))
+
 
 @admin_blueprint.route('/logout')
 def logout():
@@ -43,19 +49,22 @@ def logout():
     flash('Admin logged out successfully')
     return redirect(url_for('home'))
 
+
 @admin_blueprint.route('/analytics', methods=['GET'])
 @admin_login_required
 def analytics():
-    report = request.args.get('report', 'active_buyers')  # Default report is 'active_buyers'
+    # Default report is 'active_buyers'
+    report = request.args.get('report', 'active_buyers')
     active_buyers = []
     top_products = []
     top_sellers = []
+    buyers = []  # Add this variable to store buyers without orders
 
     conn = None
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
@@ -104,6 +113,20 @@ def analytics():
             cursor.execute(query)
             top_sellers = cursor.fetchall()
 
+        elif report == 'buyers_without_orders':
+            query = '''
+                SELECT 
+                b.BuyerId,
+                CONCAT(b.BuyerFirstName, ' ', b.BuyerLastName) AS name,
+                b.Email AS email
+                FROM Buyer b
+                LEFT JOIN Orders o ON b.BuyerId = o.BuyerId
+                WHERE o.BuyerId IS NULL
+                ORDER BY name ASC
+            '''
+            cursor.execute(query)
+            buyers = cursor.fetchall()
+
     except Exception as e:
         flash(f"Failed to generate analytics report: {str(e)}", 'danger')
     finally:
@@ -111,12 +134,14 @@ def analytics():
             conn.close()
 
     return render_template(
-        'admin_analytics.html', 
-        active_buyers=active_buyers, 
-        top_products=top_products, 
-        top_sellers=top_sellers, 
+        'admin_analytics.html',
+        active_buyers=active_buyers,
+        top_products=top_products,
+        top_sellers=top_sellers,
+        buyers=buyers,  # Add the buyers variable to the template context
         report=report
     )
+
 
 @admin_blueprint.route('/buyer-orders/<int:buyer_id>', methods=['GET'])
 @admin_login_required
@@ -127,7 +152,7 @@ def get_buyer_orders(buyer_id):
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
@@ -163,6 +188,7 @@ def get_buyer_orders(buyer_id):
 
     return render_template('admin_buyer_orders.html', orders=orders, buyer_id=buyer_id, buyer_details=buyer_details)
 
+
 @admin_blueprint.route('/buyer-orders-input', methods=['GET', 'POST'])
 @admin_login_required
 def buyer_orders_input():
@@ -173,6 +199,7 @@ def buyer_orders_input():
         flash('Please enter a valid Buyer ID', 'danger')
     return render_template('admin_buyer_orders_input.html')
 
+
 @admin_blueprint.route('/seller-sales-report', methods=['GET'])
 @admin_login_required
 def seller_sales_report():
@@ -181,7 +208,7 @@ def seller_sales_report():
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
@@ -203,6 +230,7 @@ def seller_sales_report():
 
     return render_template('admin_seller_sales_report.html', report=report)
 
+
 @admin_blueprint.route('/total-revenue', methods=['GET'])
 @admin_login_required
 def total_revenue():
@@ -213,7 +241,7 @@ def total_revenue():
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor()
@@ -259,6 +287,7 @@ def total_revenue():
         category_wise_revenue=category_wise_revenue
     )
 
+
 @admin_blueprint.route('/view_users', methods=['GET'])
 @admin_login_required
 def view_users():
@@ -267,7 +296,7 @@ def view_users():
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
@@ -288,6 +317,7 @@ def view_users():
 
     return render_template('admin_view_users.html', users=users)
 
+
 @admin_blueprint.route('/seller-sales-input', methods=['GET', 'POST'])
 @admin_login_required
 def seller_sales_input():
@@ -298,6 +328,7 @@ def seller_sales_input():
         flash('Please enter a valid Seller ID', 'danger')
     return render_template('admin_seller_sales_input.html')
 
+
 @admin_blueprint.route('/seller-sales/<int:seller_id>', methods=['GET'])
 @admin_login_required
 def get_seller_sales(seller_id):
@@ -307,7 +338,7 @@ def get_seller_sales(seller_id):
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
@@ -359,29 +390,49 @@ def get_seller_sales(seller_id):
 
     return render_template('admin_seller_sales_report.html', seller_details=seller_details, sales_stats=sales_stats)
 
+
 @admin_blueprint.route('/buyers-without-orders', methods=['GET'])
 @admin_login_required
 def buyers_without_orders():
     buyers = []
     conn = None
+    sort_by = request.args.get('sort', 'name')  # Default sort by name
+
     try:
         conn = connect_to_mysql()
         if not conn:
-            flash('Database connection failed')
+            flash('Database connection failed', 'danger')
             return redirect(url_for('admin.dashboard'))
 
         cursor = conn.cursor(dictionary=True)
+
+        # Enhanced query with buyer details
         query = '''
-            SELECT BuyerId, CONCAT(BuyerFirstName, ' ', BuyerLastName) AS name, Email
-            FROM Buyer
-            WHERE BuyerId NOT IN (SELECT DISTINCT BuyerId FROM Orders)
+            SELECT 
+    b.BuyerId,
+    CONCAT(b.BuyerFirstName, ' ', b.BuyerLastName) AS name,
+    b.Email AS email,
+    b.City,
+    b.States
+FROM Buyer b
+LEFT JOIN Orders o ON b.BuyerId = o.BuyerId
+WHERE o.BuyerId IS NULL;
         '''
+
         cursor.execute(query)
         buyers = cursor.fetchall()
+
     except Exception as e:
         flash(f"Failed to fetch buyers without orders: {str(e)}", 'danger')
+        return redirect(url_for('admin.dashboard'))
+
     finally:
         if conn:
-            conn.close()
+            try:
+                conn.close()
+            except Exception:
+                pass
 
-    return render_template('admin_buyers_without_orders.html', buyers=buyers)
+    return render_template('admin_buyers_without_orders.html',
+                           buyers=buyers,
+                           total_inactive=len(buyers))
