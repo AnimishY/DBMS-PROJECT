@@ -3,3 +3,4 @@ venv/
 config\database.py
 config/database.py
 config/database.py
+/config
