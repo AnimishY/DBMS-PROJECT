@@ -1,0 +1,160 @@
+@ -0,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #fff3e6 0%, #ffe4e6 100%);
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2.2rem;
+        color: #1a1a1a;
+        margin-bottom: 2rem;
+    }
+
+    .shipment-details {
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 1rem;
+    }
+
+    .detail-label {
+        width: 40%;
+        font-weight: 600;
+        color: #4b5563;
+    }
+
+    .detail-value {
+        width: 60%;
+        color: #1f2937;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        color: white;
+    }
+
+    .badge-success {
+        background-color: #10b981;
+    }
+
+    .badge-info {
+        background-color: #3b82f6;
+    }
+
+    .badge-warning {
+        background-color: #f59e0b;
+    }
+
+    .badge-secondary {
+        background-color: #6b7280;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: white;
+        background-color: #ea580c;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+        background-color: #c2410c;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="container">
+    <h1>Shipment Details</h1>
+    
+    <div class="shipment-details">
+        <div class="detail-row">
+            <div class="detail-label">Order ID:</div>
+            <div class="detail-value">{{ shipment.OrderId }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Order Status:</div>
+            <div class="detail-value">
+                <span class="badge 
+                    {% if shipment.OrderStatus == 'Delivered' %}badge-success
+                    {% elif shipment.OrderStatus == 'Shipped' %}badge-info
+                    {% elif shipment.OrderStatus == 'Processing' %}badge-warning
+                    {% else %}badge-secondary{% endif %}">
+                    {{ shipment.OrderStatus }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Shipment Date:</div>
+            <div class="detail-value">
+                {{ shipment.ShipmentDate.strftime('%Y-%m-%d') if shipment.ShipmentDate else 'Not specified' }}
+            </div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Expected Delivery:</div>
+            <div class="detail-value">
+                {{ shipment.DeliveryDate.strftime('%Y-%m-%d') if shipment.DeliveryDate else 'Not specified' }}
+            </div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Shipping Method:</div>
+            <div class="detail-value">{{ shipment.ShippingMethod }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Tracking Number:</div>
+            <div class="detail-value">{{ shipment.TrackingNumber }}</div>
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <a href="{{ url_for('seller.view_orders') }}" class="btn btn-secondary">Back to Orders</a>
+        <a href="{{ url_for('seller.add_shipment', order_id=shipment.OrderId) }}" class="btn">Update Shipment</a>
+    </div>
+</div>
+{% endblock %}
