@@ -1,5 +1,5 @@
 from flask import Flask, redirect, url_for, render_template, session
-from flask_uploads import configure_uploads
+from flask_uploads_patch import configure_uploads
 from config.schema import init_db
 from config.uploads import photos  # Import photos from the new module
 from routes.buyer_routes import buyer_blueprint
