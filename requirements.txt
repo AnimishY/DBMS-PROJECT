@@ -12,3 +12,4 @@ WTForms==3.2.1
 gunicorn==21.2.0
 google-generativeai==0.4.1
 
+Flask-Uploads==0.2.1
