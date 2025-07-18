@@ -28,3 +28,6 @@ class UploadSet:
 def configure_uploads(app, *upload_sets):
     for upload_set in upload_sets:
         upload_set._config(app, upload_set.name)
+
+photos = UploadSet('photos', IMAGES)
+
