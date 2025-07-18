@@ -1,19 +1,18 @@
 from flask import Flask, redirect, url_for, render_template, session
-from flask_uploads import configure_uploads
 from config.schema import init_db
-from config.uploads import photos  # Import photos from the new module
 from routes.buyer_routes import buyer_blueprint
 from routes.seller_routes import seller_blueprint
-from routes.admin_routes import admin_blueprint  # Import the new admin blueprint
+from routes.admin_routes import admin_blueprint
+import os
 
+# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
+app.secret_key = 'your_secret_key_here'  # Replace with a secure key
 
-# Configure upload folder
-app.config['UPLOADED_PHOTOS_DEST'] = 'static/uploads'  # Folder to store images
-
-# Set up Flask-Uploads
-configure_uploads(app, photos)
+# Set upload folder path
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize database schema
 with app.app_context():
@@ -22,8 +21,9 @@ with app.app_context():
 # Register blueprints
 app.register_blueprint(seller_blueprint, url_prefix='/seller')
 app.register_blueprint(buyer_blueprint, url_prefix='/buyer')
-app.register_blueprint(admin_blueprint, url_prefix='/admin')  # Register admin blueprint
+app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
+# Routes
 @app.route('/')
 def home():
     return render_template('landing_page.html')
@@ -32,5 +32,7 @@ def home():
 def not_found_error(error):
     return render_template('404.html'), 404
 
+# Run the app (Fly.io compatible)
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
